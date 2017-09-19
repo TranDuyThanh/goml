@@ -35,7 +35,7 @@ Example Online Naive Bayes Text Classifier (multiclass):
 	// the text to omit anything except
 	// words and numbers (and spaces
 	// obviously)
-	model := NewNaiveBayes(stream, 2, base.OnlyWordsAndNumbers)
+	model := NewNaiveBayes(stream, 2, base.OnlyWordsAndNumbersAndLowDash)
 
 	go model.OnlineLearn(errors)
 
@@ -85,7 +85,7 @@ import (
 
 	"golang.org/x/text/transform"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/TranDuyThanh/goml/base"
 )
 
 /*
@@ -224,6 +224,24 @@ func (m *concurrentMap) Set(k string, v Word) {
 	m.Lock()
 	m.words[k] = v
 	m.Unlock()
+}
+
+// Delete deletes word k's value
+func (m *concurrentMap) Delete(k string) {
+	m.Lock()
+	delete(m.words, k)
+	m.Unlock()
+}
+
+// ListWords returns a list of words
+func (m *concurrentMap) ListWords() *[]string {
+	result := []string{}
+	m.Lock()
+	for k, _ := range m.words {
+		result = append(result, k)
+	}
+	m.Unlock()
+	return &result
 }
 
 // Word holds the structural
@@ -492,9 +510,35 @@ func (b *NaiveBayes) PersistToFile(path string) error {
 	return nil
 }
 
+// PersistToFilePretty takes in an absolute filepath and saves the
+// parameter vector θ to the file, which can be restored later.
+// The function will take paths from the current directory, but
+// functions
+//
+// The data is stored as JSON because it's one of the most
+// efficient storage method (you only need one comma extra
+// per feature + two brackets, total!) And it's extendable.
+func (b *NaiveBayes) PersistToFilePretty(path string) error {
+	if path == "" {
+		return fmt.Errorf("ERROR: you just tried to persist your model to a file with no path!! That's a no-no. Try it with a valid filepath")
+	}
+
+	bytes, err := json.MarshalIndent(b, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path, bytes, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Restore takes the bytes of a NaiveBayes model and
 // restores a model to it. It defaults the sanitizer
-// to base.OnlyWordsAndNumbers and the tokenizer to
+// to base.OnlyWordsAndNumbersAndLowDash and the tokenizer
 // to a SimpleTokenizer that splits on spaces.
 //
 // This would be useful if training a model and saving
@@ -504,7 +548,7 @@ func (b *NaiveBayes) PersistToFile(path string) error {
 // in text models vs. others because the text models
 // usually have much larger storage requirements.
 func (b *NaiveBayes) Restore(data []byte) error {
-	return b.RestoreWithFuncs(bytes.NewReader(data), base.OnlyWordsAndNumbers, &SimpleTokenizer{SplitOn: " "})
+	return b.RestoreWithFuncs(bytes.NewReader(data), base.OnlyWordsAndNumbersAndLowDash, &SimpleTokenizer{SplitOn: " "})
 }
 
 // RestoreWithFuncs takes raw JSON data of a model and
@@ -526,7 +570,7 @@ func (b *NaiveBayes) RestoreWithFuncs(data io.Reader, sanitizer func(rune) bool,
 // RestoreFromFile takes in a path to a parameter vector theta
 // and assigns the model it's operating on's parameter vector
 // to that. The only parameters not in the vector are the sanitization
-// and tokenization functions which default to base.OnlyWordsAndNumbers
+// and tokenization functions which default to base.OnlyWordsAndNumbersAndLowDash
 // and SimpleTokenizer{SplitOn: " "}
 //
 // The path must ba an absolute path or a path from the current

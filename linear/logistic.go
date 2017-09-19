@@ -9,7 +9,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/TranDuyThanh/goml/base"
 )
 
 // Logistic represents the logistic classification

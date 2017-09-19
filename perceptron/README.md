@@ -1,7 +1,7 @@
 ## [Perceptron](http://cs229.stanford.edu/notes/cs229-notes6.pdf)
-### `import "github.com/cdipaolo/goml/perceptron"`
+### `import "github.com/TranDuyThanh/goml/perceptron"`
 
-[![GoDoc](https://godoc.org/github.com/cdipaolo/goml/perceptron?status.svg)](https://godoc.org/github.com/cdipaolo/goml/perceptron)
+[![GoDoc](https://godoc.org/github.com/TranDuyThanh/goml/perceptron?status.svg)](https://godoc.org/github.com/TranDuyThanh/goml/perceptron)
 
 The perceptron model holds easy to implement, online, reactive perceptrons that work with Golang channels (streams) of data to make pipelined training more efficient.
 
@@ -91,7 +91,7 @@ for {
 
 // now you can predict!!
 // note that guess is a []float64 of len() == 1
-// when it isn't nil (it is in the case of 
+// when it isn't nil (it is in the case of
 // an error)
 guess, err := model.Predict([]float64{i})
 if err != nil {

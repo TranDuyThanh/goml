@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cdipaolo/goml/base"
+	"github.com/TranDuyThanh/goml/base"
 
 	"github.com/stretchr/testify/assert"
 )

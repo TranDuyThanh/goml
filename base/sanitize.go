@@ -29,6 +29,14 @@ func OnlyWordsAndNumbers(r rune) bool {
 	return !(r == ' ' || unicode.IsLetter(r) || unicode.IsDigit(r))
 }
 
+// OnlyWordsAndNumbersAndLowDash is a transform
+// function that lets any unicode letter
+// or digit through as well as spaces
+// and low dash
+func OnlyWordsAndNumbersAndLowDash(r rune) bool {
+	return !(r == ' ' || r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r))
+}
+
 // OnlyAsciiWords is a transform function
 // that will only let a-zA-Z, and
 // spaces through
