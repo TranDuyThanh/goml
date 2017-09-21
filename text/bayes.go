@@ -129,6 +129,10 @@ which could easily underflow the float value):
 Much better. That's our model!
 */
 type NaiveBayes struct {
+	// ClassMap holds a map of class code (uint8)
+	// to there names
+	ClassMap map[uint8]string `json:"classes"`
+
 	// Words holds a map of words
 	// to their corresponding Word
 	// structure
@@ -160,7 +164,7 @@ type NaiveBayes struct {
 
 	// tokenizer is used by a model
 	// to split the input into tokens
-	Tokenizer Tokenizer `json:"tokenizer"`
+	Tokenizer Tokenizer `json:"-"`
 
 	// Output is the io.Writer used for logging
 	// and printing. Defaults to os.Stdout.
@@ -244,6 +248,20 @@ func (m *concurrentMap) ListWords() *[]string {
 	return &result
 }
 
+// MaxSeen returns the seen of a word in model that is max
+func (m *concurrentMap) MaxSeen() uint64 {
+	var max uint64
+
+	m.Lock()
+	for _, w := range m.words {
+		if w.Seen > max {
+			max = w.Seen
+		}
+	}
+	m.Unlock()
+	return max
+}
+
 // Word holds the structural
 // information needed to calculate
 // the probability of
@@ -266,7 +284,7 @@ type Word struct {
 	// DocsSeen is the same as Seen but
 	// a word is only counted once even
 	// if it's in a document multiple times
-	DocsSeen uint64 `json:"-"`
+	DocsSeen uint64
 }
 
 // NewNaiveBayes returns a NaiveBayes model the
@@ -276,6 +294,7 @@ type Word struct {
 // comply with the transform.RemoveFunc interface
 func NewNaiveBayes(stream <-chan base.TextDatapoint, classes uint8, sanitize func(rune) bool) *NaiveBayes {
 	return &NaiveBayes{
+		ClassMap:      make(map[uint8]string),
 		Words:         concurrentMap{sync.RWMutex{}, make(map[string]Word)},
 		Count:         make([]uint64, classes),
 		Probabilities: make([]float64, classes),
