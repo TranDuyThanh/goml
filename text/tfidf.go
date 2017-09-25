@@ -86,6 +86,20 @@ func (t *TFIDF) TFIDF(word string, sentence string) float64 {
 }
 
 // MostImportantWords runs TFIDF on a
+// whole document, returning the p% of
+// sorted words by importance.
+//
+// The returned keyword slice is sorted
+// by importance
+func (t *TFIDF) MostImportantWordsByPercentage(sentence string, p float64) Frequencies {
+	freq := t.AnalyseTFIDF(sentence)
+
+	n := int(p * float64(len(freq)))
+
+	return freq[:n]
+}
+
+// MostImportantWords runs TFIDF on a
 // whole document, returning the n most
 // important words in the document. If
 // n is greater than the number of words
@@ -94,6 +108,22 @@ func (t *TFIDF) TFIDF(word string, sentence string) float64 {
 // The returned keyword slice is sorted
 // by importance
 func (t *TFIDF) MostImportantWords(sentence string, n int) Frequencies {
+	freq := t.AnalyseTFIDF(sentence)
+
+	if n > len(freq) {
+		return freq
+	}
+
+	return freq[:n]
+}
+
+// AnalyseTFIDF runs TFIDF on a whole document,
+// returning the all words in the document with
+// term frequency, tfidf score
+//
+// The returned keyword slice is sorted
+// by tfidf score
+func (t *TFIDF) AnalyseTFIDF(sentence string) Frequencies {
 	sentence, _, _ = transform.String(t.sanitize, sentence)
 	document := t.Tokenizer.Tokenize(sentence)
 
@@ -106,11 +136,7 @@ func (t *TFIDF) MostImportantWords(sentence string, n int) Frequencies {
 	// sort into slice
 	sort.Sort(sort.Reverse(freq))
 
-	if n > len(freq) {
-		return freq
-	}
-
-	return freq[:n]
+	return freq
 }
 
 // TermFrequency returns the term frequency
